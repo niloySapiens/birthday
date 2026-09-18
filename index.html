@@ -928,6 +928,16 @@ button:focus-visible,
   animation:fadeup 1s ease 0.3s forwards;
 }
 
+.reveal-emoji{
+  opacity:0;
+  margin-top:16px;
+  font-size:24px;
+}
+
+.reveal-emoji.show{
+  animation:fadeup 0.8s ease forwards;
+}
+
 .reveal-quip{
   opacity:0;
   font-family:var(--mono);
@@ -1074,14 +1084,7 @@ button:focus-visible,
       id="progressTag"
       style="display:none;"
     ></span>
-
-    <button
-      class="sound-btn"
-      id="soundBtn"
-      aria-label="Toggle sound"
-      aria-pressed="false"
-    >🔇</button>
-  </div>
+</div>
 </div>
 
 <div id="app" role="main"></div>
@@ -1097,7 +1100,7 @@ var reduceMotion =
   window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 var audioCtx = null;
-var soundOn = false;
+var soundOn = true;
 var clickedTitleCount = 0;
 
 function ensureAudio(){
@@ -1131,7 +1134,7 @@ function tone(freq, dur, type, gainVal, delay){
     gain.gain.setValueAtTime(0, t0);
 
     gain.gain.linearRampToValueAtTime(
-      gainVal || 0.06,
+      Math.min((gainVal || 0.06) * 1.65, 0.12),
       t0 + 0.012
     );
 
@@ -1285,7 +1288,7 @@ var SFX = {
       gain.gain.setValueAtTime(0.0001, t0);
 
       gain.gain.linearRampToValueAtTime(
-        0.05,
+        0.085,
         t0 + 0.06
       );
 
@@ -1306,7 +1309,7 @@ var SFX = {
 
       [523.25, 659.25, 783.99, 1046.5].forEach(
         function(f){
-          tone(f, 0.9, 'sawtooth', 0.045, chordDelay);
+          tone(f, 0.9, 'sawtooth', 0.07, chordDelay);
         }
       );
 
@@ -1374,27 +1377,6 @@ function rand(min,max){
 var app = document.getElementById('app');
 var progressTag = document.getElementById('progressTag');
 var brandLabel = document.getElementById('brandLabel');
-var soundBtn = document.getElementById('soundBtn');
-
-soundBtn.addEventListener('click', function(){
-
-  ensureAudio();
-
-  soundOn = !soundOn;
-
-  soundBtn.textContent =
-    soundOn ? '🔊' : '🔇';
-
-  soundBtn.setAttribute(
-    'aria-pressed',
-    soundOn ? 'true' : 'false'
-  );
-
-  if(soundOn){
-    SFX.beep();
-  }
-
-});
 
 /* ============================= THEME ============================= */
 
@@ -1515,7 +1497,7 @@ function setWarmth(w){
 
 /* ============================= STAGE DATA ============================= */
 
-var TOTAL_TESTS = 10;
+var TOTAL_TESTS = 11;
 
 var stages = [
 
@@ -1526,16 +1508,16 @@ var stages = [
     test:1,
     type:'choice',
     eyebrow:'IDENTITY VERIFICATION SYSTEM',
-    q:'Are you a robot?',
+    q:'Are you human?',
     sub:'Before continuing, we need to verify something.',
     options:[
-      'YES',
-      'DEFINITELY YES'
+      'No',
+      'Definitely not'
     ],
     log:[
       'Interesting.',
       'That answer has been recorded.',
-      'Human confidence level: suspicious.'
+      'Human confidence level: 0%. Nice try.'
     ]
   },
 
@@ -1546,8 +1528,25 @@ var stages = [
   },
 
   {
-    id:'team',
+    id:'seasonal',
     test:3,
+    type:'choice',
+    eyebrow:'FOOTBALL FAN VERIFICATION',
+    q:'Are you a Seasonal Football Fan?',
+    options:[
+      'Yes',
+      '100% yes',
+      'Why not'
+    ],
+    log:[
+      'Interesting... 😂',
+      'Seasonal fan status: CONFIRMED.'
+    ]
+  },
+
+  {
+    id:'team',
+    test:4,
     type:'choice',
     eyebrow:'LOYALTY ASSESSMENT',
     q:'What is your favourite football team?',
@@ -1558,16 +1557,14 @@ var stages = [
       'Argentina supremacy'
     ],
     log:[
-      'Interesting choice.',
-      'Your football records have been updated.',
-      '⚠ Football department notified.'
-    ],
-    warnLast:true
+      'Interesting choice... 😂',
+      'Your football records have been updated.'
+    ]
   },
 
   {
     id:'player',
-    test:4,
+    test:5,
     type:'choice',
     eyebrow:'LOYALTY ASSESSMENT — PART II',
     q:'Choose your favourite football player.',
@@ -1585,7 +1582,7 @@ var stages = [
 
   {
     id:'baby',
-    test:5,
+    test:6,
     type:'choice',
     eyebrow:'DIAGNOSTIC INTERFACE',
     q:'Are you a crying baby?',
@@ -1603,27 +1600,25 @@ var stages = [
 
   {
     id:'brain',
-    test:6,
+    test:7,
     type:'choice',
     eyebrow:'NEURAL SCAN',
     q:'Where is your brain?',
     options:[
       'At the knee',
-      'I don’t have a brain',
-      'Still loading...',
-      'Niloy borrowed it'
+      'I don’t have a brain'
     ],
     log:[
       'Scanning neural activity...',
-      'Searching for brain...',
-      'Result: unavailable.',
+      'Searching for brain... 😂',
+      'Result: unavailable. 😂',
       'Possible explanation: Niloy currently has it.'
     ]
   },
 
   {
     id:'love',
-    test:7,
+    test:8,
     type:'choice',
     eyebrow:'MEMORY VERIFICATION',
     q:'Who loves you most?',
@@ -1631,8 +1626,7 @@ var stages = [
       'Niloy',
       'Obviously Niloy',
       'Niloy ❤️',
-      'Still Niloy',
-      'Do I really need to explain this?'
+      'Still Niloy'
     ],
     log:[
       'Answer accepted.'
@@ -1641,7 +1635,7 @@ var stages = [
 
   {
     id:'type',
-    test:8,
+    test:9,
     type:'overthink',
     eyebrow:'PERSONALITY SCAN',
     q:'What is your type?',
@@ -1650,24 +1644,6 @@ var stages = [
       'Full-time overthinker',
       'Overthinker Pro Max',
       'I overthink everything'
-    ]
-  },
-
-  {
-    id:'curiosity',
-    test:9,
-    type:'choice',
-    eyebrow:'PREDICTIVE ANALYSIS',
-    q:'What happens when Niloy says: “I have something for you”?',
-    options:[
-      'Panic',
-      'Overthink',
-      'Ask 47 questions',
-      'Pretend I’m not curious'
-    ],
-    log:[
-      'Prediction complete.',
-      'Curiosity level: catastrophic.'
     ]
   },
 
@@ -1894,6 +1870,26 @@ function renderStart(){
 
 /* ============================= GENERIC CHOICE ============================= */
 
+function showChoicePopup(text){
+  var popup = el('div',{text:text});
+  popup.style.cssText =
+    'position:fixed;left:50%;top:50%;transform:translate(-50%,-50%) scale(.9);'+
+    'z-index:100;padding:18px 26px;border-radius:16px;'+
+    'background:rgba(10,8,18,.94);border:1px solid var(--gold);'+
+    'box-shadow:0 20px 60px rgba(0,0,0,.5);font-size:22px;font-weight:800;'+
+    'color:var(--cream);opacity:0;transition:opacity .2s,transform .2s;';
+  document.body.appendChild(popup);
+  requestAnimationFrame(function(){
+    popup.style.opacity='1';
+    popup.style.transform='translate(-50%,-50%) scale(1)';
+  });
+  setTimeout(function(){
+    popup.style.opacity='0';
+    popup.style.transform='translate(-50%,-50%) scale(.96)';
+    setTimeout(function(){popup.remove();},220);
+  },1300);
+}
+
 function renderChoice(s){
 
   var wrap = el('div');
@@ -1980,6 +1976,14 @@ function renderChoice(s){
 
         btn.style.borderColor =
           'var(--gold)';
+
+        if(s.id === 'player'){
+          showChoicePopup('Brazilian Spy🫵');
+        }
+
+        if(s.id === 'love' && btn.textContent.trim().indexOf('Niloy') !== -1){
+          showChoicePopup('Awww🥺');
+        }
 
         playLog(
           s.log || [],
@@ -2086,27 +2090,10 @@ function renderFood(s){
   */
 
   var foods = [
-
-    {
-      e:'🐟',
-      l:'Rui'
-    },
-
-    {
-      e:'🐠',
-      l:'Catla'
-    },
-
-    {
-      e:'🐟',
-      l:'Pangas'
-    },
-
-    {
-      e:'🐟',
-      l:'Telapia'
-    }
-
+    { e:'🐟', l:'Rui' },
+    { e:'🐠', l:'Catla' },
+    { e:'🍽️', l:'Anything with fish' },
+    { e:'🐟', l:'All kinds of fish' }
   ];
 
   var tilesHtml =
@@ -2146,7 +2133,7 @@ function renderFood(s){
         '</div>'+
 
         '<div class="confidence-num" id="confNum">'+
-          'Human probability: 0.0%'+
+          'Human probability: 0%'+
         '</div>'+
 
       '</div>'+
@@ -2184,13 +2171,9 @@ function renderFood(s){
 
           'Analyzing selection...',
 
-          'Checking fish preference...',
+          'Fish obsession detected. 🐟',
 
-          'Rui / Catla / Pangas / Telapia detected.',
-
-          'Checking suspicious behaviour...',
-
-          'RESULT: QUESTIONABLE HUMAN'
+          'RESULT: DEFINITELY NOT HUMAN'
 
         ];
 
@@ -2222,57 +2205,17 @@ function renderFood(s){
                         .style.display =
                         'block';
 
-                      requestAnimationFrame(
-                        function(){
+                      // Human probability must remain at 0%.
+                      $('#confBar')
+                        .style.width =
+                        '0%';
 
-                          $('#confBar')
-                            .style.width =
-                            '87.4%';
-
-                        }
-                      );
-
-                      var t0 =
-                        Date.now();
-
-                      function tick(){
-
-                        var p =
-                          Math.min(
-                            1,
-                            (Date.now()-t0)/1100
-                          );
-
-                        $('#confNum')
-                          .textContent =
-                          'Human probability: '+
-                          (p*87.4).toFixed(1)+
-                          '%';
-
-                        if(p<1){
-                          requestAnimationFrame(
-                            tick
-                          );
-                        }
-
-                      }
-
-                      tick();
+                      $('#confNum')
+                        .textContent =
+                        'Human probability: 0%';
 
                       setTimeout(
                         function(){
-
-                          var d2 =
-                            el(
-                              'div',
-                              {
-                                cls:'line',
-                                html:
-                                  'Unfortunately, you may continue.'
-                              }
-                            );
-
-                          log.appendChild(d2);
 
                           var btn =
                             el(
@@ -2452,7 +2395,7 @@ function renderOverthink(s){
 
                     $('#meterPct')
                       .textContent =
-                      Math.round(p*147)+'%';
+                      Math.round(p*1000)+'%';
 
                     if(p<1){
                       requestAnimationFrame(
@@ -2473,7 +2416,7 @@ function renderOverthink(s){
                           {
                             cls:'line warn',
                             html:
-                              'Please stop thinking.'
+                              'Please stop thinking. 😂'
                           }
                         )
                       );
@@ -3470,15 +3413,14 @@ function renderReveal(){
         '— Niloy'+
       '</div>'+
 
+      '<div class="reveal-emoji" id="revealEmoji" aria-hidden="true">😉</div>'+
+
       '<div class="reveal-controls" id="revealControls">'+
 
         '<button class="pill-btn" id="replayBtn">'+
           'Replay the chaos'+
         '</button>'+
 
-        '<button class="pill-btn" id="soundBtn2">'+
-          'Sound On/Off'+
-        '</button>'+
 
       '</div>'+
 
@@ -3538,10 +3480,18 @@ function renderReveal(){
 
       setTimeout(
         function(){
+          $('#revealEmoji')
+            .classList.add('show');
+        },
+        2900
+      );
+
+      setTimeout(
+        function(){
           $('#revealControls')
             .classList.add('show');
         },
-        2500
+        3350
       );
 
     },
@@ -3673,30 +3623,6 @@ function renderReveal(){
     }
   );
 
-  $('#soundBtn2').addEventListener(
-    'click',
-    function(){
-
-      ensureAudio();
-
-      soundOn = !soundOn;
-
-      soundBtn.textContent =
-        soundOn ? '🔊' : '🔇';
-
-      soundBtn.setAttribute(
-        'aria-pressed',
-        soundOn
-        ? 'true'
-        : 'false'
-      );
-
-      if(soundOn){
-        SFX.beep();
-      }
-
-    }
-  );
 
   /* balloons */
 
